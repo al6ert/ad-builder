@@ -1,134 +1,166 @@
 # ad-builder
 
-Repositorio de trabajo centrado en un skill local llamado `skill-creator`, pensado para crear, validar, evaluar y mejorar skills de agentes de forma iterativa.
+Repositorio para un flujo de trabajo de creatividad publicitaria en dos pasos:
 
-Ahora mismo el valor principal del proyecto está en `.agents/skills/skill-creator/`: ahí viven las instrucciones del skill, scripts de automatización, agentes auxiliares, referencias de esquemas y un visor HTML para revisar resultados de evaluación.
+1. `ad-builder`: genera anuncios en imagen a partir de un brief.
+2. `ad-to-pencil`: convierte esas creatividades en un fichero Pencil `.pen` editable.
 
-## Qué incluye
+El repo no contiene una app web completa. El núcleo actual está en los skills locales de Claude dentro de [`.claude/skills/ad-builder`](/Users/persualia/Projects/ad-builder/.claude/skills/ad-builder) y [`.claude/skills/ad-to-pencil`](/Users/persualia/Projects/ad-builder/.claude/skills/ad-to-pencil).
 
-- Un skill base en [`.agents/skills/skill-creator/SKILL.md`](/Users/persualia/Projects/ad-builder/.agents/skills/skill-creator/SKILL.md)
-- Scripts Python para validar, evaluar y optimizar skills
-- Agentes auxiliares para análisis, comparación y grading
-- Un visor HTML para revisar evals localmente
-- Assets y referencias para el flujo de trabajo del skill
+## Qué hace cada skill
 
-## Estructura
+### `ad-builder`
+
+Definido en [`.claude/skills/ad-builder/SKILL.md`](/Users/persualia/Projects/ad-builder/.claude/skills/ad-builder/SKILL.md).
+
+Su objetivo es generar creatividades publicitarias profesionales usando Replicate, a partir de:
+
+- título
+- subtítulo
+- CTA
+- color principal o paleta
+- restricciones de marca opcionales
+
+El skill está pensado para producir siempre 3 variantes de ratio:
+
+- `1:1`
+- `4:5`
+- `9:16`
+
+El modelo documentado en el skill es `google/nano-banana-pro`, y el resultado esperado es un conjunto de imágenes descargadas en `output/<timestamp>/`.
+
+### `ad-to-pencil`
+
+Definido en [`.claude/skills/ad-to-pencil/SKILL.md`](/Users/persualia/Projects/ad-builder/.claude/skills/ad-to-pencil/SKILL.md).
+
+Toma la salida de `ad-builder` y la reconstruye como un archivo Pencil editable:
+
+- analiza las 3 imágenes del anuncio
+- extrae estructura visual, color, tipografía y capas
+- decide qué partes deben ser vectoriales y cuáles raster
+- genera un `.pen` con 3 artboards
+
+El objetivo es que el diseño final sea editable por capas, no una imagen plana incrustada.
+
+## Flujo del proyecto
 
 ```text
+Brief publicitario
+  ↓
+ad-builder
+  ↓
+output/<timestamp>/
+  ├── ad_1x1.jpg
+  ├── ad_4x5.jpg
+  └── ad_9x16.jpg
+  ↓
+ad-to-pencil
+  ↓
+output/<timestamp>/ad.pen
+```
+
+## Estructura relevante
+
+```text
+.claude/
+└── skills/
+    ├── ad-builder/
+    │   ├── SKILL.md
+    │   └── evals/
+    │       └── evals.json
+    └── ad-to-pencil/
+        ├── SKILL.md
+        └── evals/
+            └── evals.json
+
 .agents/
 └── skills/
     └── skill-creator/
-        ├── SKILL.md
-        ├── agents/
-        │   ├── analyzer.md
-        │   ├── comparator.md
-        │   └── grader.md
-        ├── assets/
-        ├── eval-viewer/
-        │   ├── generate_review.py
-        │   └── viewer.html
-        ├── references/
-        │   └── schemas.md
-        └── scripts/
-            ├── aggregate_benchmark.py
-            ├── generate_report.py
-            ├── improve_description.py
-            ├── package_skill.py
-            ├── quick_validate.py
-            ├── run_eval.py
-            ├── run_loop.py
-            └── utils.py
+
+output/                 # ignorado por git
+fonts/
+README.md
 ```
 
-## Requisitos
+Nota: el repositorio también incluye `skill-creator` como herramienta auxiliar de evaluación y mejora de skills, pero no es el producto principal descrito por este `README`.
 
-- Python 3.10+
-- `claude` CLI disponible en el entorno para los flujos que usan `claude -p`
-- `PyYAML` para la validación de frontmatter
+## Inputs y outputs
 
-Instalación mínima:
+### Entrada de `ad-builder`
+
+Un brief con contenido tipo:
+
+- `Título`
+- `Subtítulo`
+- `CTA`
+- `Color primario`
+- `Colores adicionales` opcionales
+- `Restricciones de marca` opcionales
+
+### Salida de `ad-builder`
+
+Una carpeta en `output/` con las 3 imágenes del anuncio en formatos de aspecto distintos.
+
+### Entrada de `ad-to-pencil`
+
+Una carpeta de `output/` que contenga las imágenes generadas del anuncio.
+
+### Salida de `ad-to-pencil`
+
+Un archivo `.pen` editable en la misma carpeta del anuncio, con 3 artboards:
+
+- `1:1`
+- `4:5`
+- `9:16`
+
+## Evals incluidas
+
+El repo ya incluye casos de evaluación para ambos skills:
+
+- [`.claude/skills/ad-builder/evals/evals.json`](/Users/persualia/Projects/ad-builder/.claude/skills/ad-builder/evals/evals.json)
+- [`.claude/skills/ad-to-pencil/evals/evals.json`](/Users/persualia/Projects/ad-builder/.claude/skills/ad-to-pencil/evals/evals.json)
+
+Los evals de `ad-builder` validan aspectos como:
+
+- guardado de archivos en `output/`
+- uso del modelo de Replicate
+- respeto de restricciones de color
+- presencia y tratamiento del CTA
+
+Los evals de `ad-to-pencil` validan aspectos como:
+
+- lectura de las 3 imágenes fuente
+- creación de un `.pen`
+- consistencia entre artboards
+- uso del pipeline de reconstrucción editable
+
+## Configuración local
+
+El repositorio usa variables de entorno para secrets. El ejemplo está en [`.env.example`](/Users/persualia/Projects/ad-builder/.env.example).
+
+Variables relevantes:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install pyyaml
+REPLICATE_API_TOKEN=your_replicate_token_here
 ```
 
-## Flujo principal
+Tu `.env` local no se versiona.
 
-El skill está pensado para este ciclo:
-
-1. Definir o editar un skill.
-2. Preparar prompts de prueba.
-3. Ejecutar evaluaciones comparando comportamiento con y sin skill, o frente a una versión anterior.
-4. Revisar resultados cualitativos y cuantitativos.
-5. Ajustar el `SKILL.md` y repetir.
-
-## Scripts útiles
-
-### Validar un skill
+Si necesitas cargarlo en la sesión shell:
 
 ```bash
-python3 .agents/skills/skill-creator/scripts/quick_validate.py .agents/skills/skill-creator
+set -a
+source .env
+set +a
 ```
 
-Comprueba que exista `SKILL.md`, que el frontmatter YAML sea válido y que campos como `name` y `description` cumplan el formato esperado.
+## Estado actual
 
-### Evaluar trigger de descripción
+Este repo documenta y versiona el workflow y los skills, no una aplicación SaaS desplegable.
 
-```bash
-python3 .agents/skills/skill-creator/scripts/run_eval.py --help
-```
+Si el siguiente paso es productizarlo, lo razonable sería:
 
-Sirve para medir si la descripción del skill hace que el agente se active cuando debería, usando `claude -p`.
-
-### Ejecutar bucle de mejora
-
-```bash
-python3 .agents/skills/skill-creator/scripts/run_loop.py --help
-```
-
-Itera entre evaluación y mejora automática de la descripción del skill, guardando historial y métricas.
-
-### Agregar resultados de benchmark
-
-```bash
-python3 .agents/skills/skill-creator/scripts/aggregate_benchmark.py <benchmark_dir>
-```
-
-Resume medias, desviaciones y diferencias entre configuraciones como `with_skill` y `without_skill`.
-
-### Empaquetar un skill
-
-```bash
-python3 .agents/skills/skill-creator/scripts/package_skill.py .agents/skills/skill-creator
-```
-
-Genera un paquete distribuible del skill, excluyendo archivos no deseados como `__pycache__`, `node_modules` o `evals/` en raíz.
-
-## Evaluación y revisión visual
-
-El directorio [`eval-viewer`](/Users/persualia/Projects/ad-builder/.agents/skills/skill-creator/eval-viewer) contiene:
-
-- [`viewer.html`](/Users/persualia/Projects/ad-builder/.agents/skills/skill-creator/eval-viewer/viewer.html): interfaz local para inspeccionar prompts, outputs, métricas y resultados.
-- `generate_review.py`: generador de datos o artefactos de revisión para alimentar el visor.
-
-El skill también define esquemas JSON documentados en [`.agents/skills/skill-creator/references/schemas.md`](/Users/persualia/Projects/ad-builder/.agents/skills/skill-creator/references/schemas.md), incluyendo:
-
-- `evals.json`
-- `grading.json`
-- `metrics.json`
-- `timing.json`
-- `history.json`
-
-## Notas del repositorio
-
-- [`.gitignore`](/Users/persualia/Projects/ad-builder/.gitignore) ignora `output/`.
-- El repositorio no expone todavía una app completa en `src/`; el foco actual es el skill y sus utilidades de evaluación.
-- Hay cambios borrados en el working tree fuera de este `README`; no los he tocado.
-
-## Próximos pasos razonables
-
-- Añadir un `requirements.txt` o `pyproject.toml` para fijar dependencias.
-- Documentar un ejemplo completo de `evals.json`.
-- Añadir un script de arranque para abrir o generar automáticamente el visor de revisión.
+- extraer la lógica a un CLI o servicio reproducible
+- formalizar dependencias y runtime
+- documentar el pipeline de ejecución extremo a extremo
+- añadir ejemplos de briefs y salidas esperadas
