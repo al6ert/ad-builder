@@ -1,0 +1,27 @@
+[
+  {
+    "name": "basic-conversion",
+    "prompt": "Convierte las imágenes del último anuncio generado a un fichero Pencil editable",
+    "expected": [
+      "reads 3 images from the most recent output/ folder",
+      "analyzes each image visually to extract layout, text, colors",
+      "produces a unified design specification JSON",
+      "calls mcp__pencil__set_variables to define color palette",
+      "calls mcp__pencil__batch_design to create 3 artboards (1:1, 4:5, 9:16)",
+      "uses G() operation to generate hero images",
+      "calls mcp__pencil__get_screenshot to verify each artboard",
+      "saves .pen file in the same output folder"
+    ]
+  },
+  {
+    "name": "specific-folder",
+    "prompt": "Pasa a pencil los anuncios de output/202603201956/",
+    "expected": [
+      "reads images from the specified folder output/202603201956/",
+      "does NOT default to the latest folder",
+      "analyzes all 3 images",
+      "creates .pen file at output/202603201956/ad.pen",
+      "all 3 artboards have consistent colors and text"
+    ]
+  }
+]

@@ -1,0 +1,66 @@
+{
+  "skill_name": "ad-builder",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Crea un anuncio para MSF con estos textos:\n\nTítulo: Dale un valor añadido a tu evento\nSubtítulo: Conviértela en una iniciativa solidaria\nCTA: Descarga esta Guía y descubre cómo.\n\nColores: Solo puedes usar Rojo (#D7211E), Blanco (#f5f5f5) y Negro (#000000).\nEstilo: Limpio y directo. Sin sombras en tipografías, sin efectos digitales complejos. Sin logotipo.",
+      "expected_output": "A 1080x1080px PNG image saved to output/YYYYMMDDHHMM/ folder, generated via Replicate z-image model, with correct text hierarchy (title > subtitle > CTA), using only the 3 specified colors, clean typographic layout with CTA visually prominent.",
+      "assertions": [
+        {
+          "name": "output_file_saved",
+          "text": "An image file (PNG or similar) is saved to an output/YYYYMMDDHHMM/ folder",
+          "type": "file_exists"
+        },
+        {
+          "name": "replicate_model_used",
+          "text": "The skill calls zsxkib/z-image via Replicate MCP (create_models_predictions or create_predictions)",
+          "type": "qualitative"
+        },
+        {
+          "name": "color_restriction_followed",
+          "text": "The prompt to z-image only references the 3 specified colors: #D7211E, #f5f5f5, #000000",
+          "type": "qualitative"
+        },
+        {
+          "name": "cta_described",
+          "text": "The CTA 'Descarga esta Guía y descubre cómo.' appears in the z-image prompt with a visually distinct treatment (button, block, etc.)",
+          "type": "qualitative"
+        },
+        {
+          "name": "no_logo_in_prompt",
+          "text": "The prompt to z-image includes 'no logo' or equivalent instruction",
+          "type": "qualitative"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Quiero un anuncio cuadrado para promocionar un curso de yoga online.\n\nTextos:\n- Título: Encuentra tu equilibrio interior\n- Subtítulo: Clases en vivo cada semana desde casa\n- CTA: Empieza hoy gratis\n\nColor principal: #2D6A4F (verde bosque)\nNo me des más colores, elige tú los que armonicen.",
+      "expected_output": "A 1080x1080px PNG image saved to output/YYYYMMDDHHMM/ folder. The skill derives a harmonious color palette from #2D6A4F and explains its choices. Image generated via Replicate z-image with clear visual hierarchy.",
+      "assertions": [
+        {
+          "name": "output_file_saved",
+          "text": "An image file is saved to an output/YYYYMMDDHHMM/ folder",
+          "type": "file_exists"
+        },
+        {
+          "name": "color_palette_derived",
+          "text": "The skill derives and explains secondary/complementary colors from the primary #2D6A4F before generating",
+          "type": "qualitative"
+        },
+        {
+          "name": "replicate_called",
+          "text": "Replicate z-image model is called via MCP tools",
+          "type": "qualitative"
+        },
+        {
+          "name": "visual_hierarchy_in_prompt",
+          "text": "The z-image prompt describes distinct sizes/weights for headline vs subheadline vs CTA",
+          "type": "qualitative"
+        }
+      ],
+      "files": []
+    }
+  ]
+}
